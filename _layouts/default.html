@@ -21,7 +21,7 @@
     {% if site.favicons or site.avatarurl %}{% include site-favicons.html %}{% endif %}
 
     {% if site.google_analytics %}{% include site-analytics.html %}{% endif %}
-
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body class="layout-{{ page.layout }}{% if page.title %}  {{ page.title | slugify }}{% endif %}">

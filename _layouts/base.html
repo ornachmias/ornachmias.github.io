@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- General meta -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% if page.collectionpage %}
+    {% seo title=false %}
+
+    {% assign collectiondata = site.collections | where: "label", page.collectionpage | first %}
+    <title>{{ collectiondata.title }} - {{ site.title }}</title>
+    <meta property="og:title" content="{{ collectiondata.title }}">
+    <meta name="description" content="{{ collectiondata.description }}">
+    <meta property="og:description" content="{{ collectiondata.description }}">
+    {% else %}
+    {% seo %}
+    {% endif %}
+
+    {% if site.favicons or site.avatarurl %}{% include site-favicons.html %}{% endif %}
+
+    {% if site.google_analytics %}{% include site-analytics.html %}{% endif %}
+
+</head>
+
+<body class="layout-{{ page.layout }}{% if page.title %}  {{ page.title | slugify }}{% endif %}">
+
+{{ content }}
+
+</body>
+
+</html>

@@ -74,7 +74,7 @@ The Haversine formula uses the angles created by latitude and longitude coordina
 
 Let's see a simple example of the differences between the Haversine formula and using map projection over specific territory. We're working under the assumption that a map projection over a limited space can result in more accurate distance measurements, we'll use that to measure the error (which is the absolute difference in this case). In this experiment, I've sampled points in a bounding box around Israel, and then measured the distance from the northernmost point to all other points, both using Haversine and the projected coordinates. Then, I used the difference between the two as an absolute error.
 
-![[clipboard2.png]]
+![]({{ site.baseurl }}/assets/map-projection/haversine_error.png)
 As presented, the more we go further from the measured point, the larger the error in the Haversine formula.
 
 # Map Projection

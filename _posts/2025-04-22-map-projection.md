@@ -18,7 +18,7 @@ Looking at any map, some level of distortion exists, due to the fact that we use
 ![]({{ site.baseurl }}/assets/map-projection/map_projection_types.jpg)
 http://practicalgeoskills.blogspot.com/2020/04/map-projections-meaning-and-examples.html [6]
 
-While on our day-to-day tasks we usually won't care about such things, when trying to write a software that uses geographical information, those inconsistencies might result in an accumulated error that will cause unexplained bugs, or an overall broken integration between systems.
+While on our day-to-day tasks we usually won't care about such things, when trying to write software that uses geographical information, those inconsistencies might result in an accumulated error that will cause unexplained bugs, or an overall broken integration between systems.
 
 # Geodetic Datum
 
@@ -75,7 +75,7 @@ The Haversine formula uses the angles created by latitude and longitude coordina
 Let's see a simple example of the differences between the Haversine formula and using map projection over specific territory. We're working under the assumption that a map projection over a limited space can result in more accurate distance measurements, we'll use that to measure the error (which is the absolute difference in this case). In this experiment, I've sampled points in a bounding box around Israel, and then measured the distance from the northernmost point to all other points, both using Haversine and the projected coordinates. Then, I used the difference between the two as an absolute error.
 
 ![]({{ site.baseurl }}/assets/map-projection/haversine_error.png)
-As presented, the more we go further from the measured point, the larger the error in the Haversine formula.
+As presented, the further we go from the measured point, the larger the error in the Haversine formula.
 
 # Map Projection
 Since we want our measurements to be correct, let it be distances, shapes or angles, we need to use some kind of a method or projection that allows us to modify the map while keeping those properties. But the thing is, there is no such a way. As I've mentioned, we're trying to describe more than we're capable on a 2D surface. The closest we can get is to choose some of the properties, and try to keep them correct.
@@ -133,7 +133,7 @@ print(f'Original Coordinates: {original_points}')
 ```
 
 ## Setting CRS
-Then, we set the input CRS and output CRS. In terms of terminology, CRS refers both to geodetic datum, which in this case is the `EPSG:4326`, which is the discussed WGS 84, and the projected coordinates `EPSG:2039`, which is the projection in meters for coordinates in Israel.
+Then, we set the input CRS and output CRS. In terms of terminology, CRS refers both to geodetic datum, which in this case is the EPSG:4326, which is the aforementioned WGS 84, and the projected coordinates EPSG:2039, which is the projection in meters for coordinates in Israel.
 
 ```python
 input_crs = 'EPSG:4326'  

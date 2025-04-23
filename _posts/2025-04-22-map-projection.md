@@ -15,7 +15,7 @@ Unfortunately, the Earth is not flat. Nor is it completely round. The Earth is a
 
 Looking at any map, some level of distortion exists, due to the fact that we use 2D tools to describe a 3D shape. Those distortions can affect many things, such as distances, shapes, sizes, etc.
 
-![Image]({{ site.baseurl }}/assets/map-projection/map_projection_types.jpg)
+![]({{ site.baseurl }}/assets/map-projection/map_projection_types.jpg)
 http://practicalgeoskills.blogspot.com/2020/04/map-projections-meaning-and-examples.html [6]
 
 While on our day-to-day tasks we usually won't care about such things, when trying to write a software that uses geographical information, those inconsistencies might result in an accumulated error that will cause unexplained bugs, or an overall broken integration between systems.
@@ -24,7 +24,7 @@ While on our day-to-day tasks we usually won't care about such things, when tryi
 
 If we take the roughly-ellipsoid shape of earth as a simplified version, geodetic datum is a mathematical model describing this shape. While it may sound simple enough, this model has changed over the years, and currently, as a standard, GPS devices are using WGS 84 [2]. Historically, there were additional coordinate systems, some of them are even still used today. A good example is ED50, which although less accurate, some old documents still use it.
 
-Going a bit into details, WGS 84 (short for "World Geodetic System", where the number indicates the year of definition - 1984), answered a need for a more accurate model following the WGS 72. WGS 84 models the Earth as an oblate spheroid, meaning it’s slightly wider at the equator than from pole to pole, and it's accurate up to 1-2 meters. The key measured parameters it is based on are [4] :
+Going a bit into details, WGS 84 (short for "World Geodetic System", where the number indicates the year of definition - 1984), answered a need for a more accurate model following the WGS 72. WGS 84 models the Earth as an oblate spheroid, meaning it’s slightly wider at the equator than from pole to pole, and it's accurate up to 1-2 meters. The key measured parameters it is based on are [4] :
 
 - Semi-major axis (a): 6,378.137 km (equatorial radius)
 - Semi-minor axis (b): 6,356.752 km (polar radius)
@@ -37,7 +37,7 @@ And the coordinates are defined as:
 Since the coordinates are angular units we usually treat them as planar units as well, where the latitude is moving along the Y axis, and the longitude along the X axis. The really irritating part is that some infrastructures are working with coordinates as X,Y values, as in longitude, latitude (e.g. OSRM), and some are the other way around (e.g. Google Maps), so always take a look at the documentation of the API you're using!
 
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcUqDznQx1eKB4HKU9KYKQO4YKtoCRNCbrSnS2YDIu5rwOGNAuf_8nDQ6t1amVsY78PXVRCAVN-c9dU9y9pSjZadWOcLEcBgd2q0EtdeMVbEdBJMvtO9iVmPCybEOYONMSVMuS_?key=BIpCm7vje3N-_XE2XjGDabd2)
+![]({{ site.baseurl }}/assets/map-projection/spheroid_height_0.jpg)
 
 https://www.icsm.gov.au/sites/default/files/inline-images/spheroid_height_0.jpg [3]
 
@@ -52,19 +52,19 @@ from math import radians, cos, sin, asin, sqrt
 
 def haversine(lat1, lon1, lat2, lon2):
 	"""
-	Calculate the great circle distance in meters between two points 
+	Calculate the great circle distance in meters between two points 
 	on the earth (specified in decimal degrees)
 	"""
 	
-	# convert decimal degrees to radians 
+	# convert decimal degrees to radians 
 	lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
 	
-	# haversine formula 
-	dlon = lon2 - lon1 
-	dlat = lat2 - lat1 
+	# haversine formula 
+	dlon = lon2 - lon1 
+	dlat = lat2 - lat1 
 	
 	a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-	c = 2 * asin(sqrt(a)) 
+	c = 2 * asin(sqrt(a)) 
 	r = 6371000
 	
 	return c * r
@@ -90,13 +90,13 @@ The different types of properties that projections are trying to maintain are [7
 - Azimuthal - preserving the directions from the center of the map
 	- Used on point-to-point communication, when trying to understand which way an antenna should point.
 
-Basically, a datum defines the shape of the Earth, while a projection is the method of flattening that shape onto a map.
+Basically, a datum defines the shape of the Earth, while a projection is the method of flattening that shape onto a map.
 
 Many resources can help you choose the right projection for your project; for example, [Projection Wizard]([https://projectionwizard.org](https://projectionwizard.org/)) suggests the best option based on your area of interest (bounding box) and the properties you want to preserve. But this article had a specific agenda in mind when it was written, and that is calculating distances on a country level, and you've probably already guessed that this country is Israel, which is quite small.
 
 ## Country-Level Map Projection
 When trying to define the bounding box for your country on projectionwizard.org, it mentions very helpful advice:
-> For maps at this scale, you can also use the state’s official projection. Most countries use a conformal projection for their official large-scale maps. You can search for official projections by area of interest in the [EPSG Geodetic Parameter Dataset](https://epsg.org/).
+> For maps at this scale, you can also use the state’s official projection. Most countries use a conformal projection for their official large-scale maps. You can search for official projections by area of interest in the [EPSG Geodetic Parameter Dataset](https://epsg.org/).
 
 When you focus on a relatively small region, using some local projection will be the most accurate one you can use. The [EPSG Geodetic Parameter Dataset](https://epsg.org/) centralizes all those local projections in one place and allows you to query them in a convenient way. It also mentions the usages of each one, and the revision date which is important since those projections are getting updates from time to time.
 
@@ -178,20 +178,17 @@ GeoPandas Projected Coordinates: [(178714.52500834814, 663613.8859131511), (1788
 Representing our round Earth on flat maps involves choosing the right way to "squash" it down, as no method is perfect and some features will always be distorted. We use coordinate systems to pinpoint locations, and different map projections prioritize different properties like accurate shapes or areas. For local work, specific country or regional projections often give the best results. Thankfully, tools and software help us convert between these systems to ensure our measurements and analyses are as accurate as possible.
 
 # Resources
-## Code
-XXX - enter link to notebook here
-
 ## Obligatory XKCD
 https://xkcd.com/977/
 
 ## References
-[1] https://oceanservice.noaa.gov/facts/earth-round.html  
+[1] https://oceanservice.noaa.gov/facts/earth-round.html  
 
-[2] https://en.wikipedia.org/wiki/World_Geodetic_System 
+[2] https://en.wikipedia.org/wiki/World_Geodetic_System 
 
-[3] https://www.icsm.gov.au/education/fundamentals-mapping/datums/datums-explained-more-detail 
+[3] https://www.icsm.gov.au/education/fundamentals-mapping/datums/datums-explained-more-detail 
 
-[4] https://en.wikipedia.org/wiki/Earth_radius 
+[4] https://en.wikipedia.org/wiki/Earth_radius 
 
 [5] https://stackoverflow.com/a/4913653
 

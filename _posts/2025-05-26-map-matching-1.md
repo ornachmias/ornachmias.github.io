@@ -101,14 +101,23 @@ https://github.com/ornachmias/map_matching
 
 ## References
 [1] https://en.wikipedia.org/wiki/Global_Positioning_System
+
 [2] https://spaceplace.nasa.gov/gps/en/
+
 [3] https://www.gps.gov/systems/gps/performance/accuracy/
+
 [4] https://en.wikipedia.org/wiki/Map_matching
+
 [5] https://www.researchgate.net/post/GPS_data_recording_at_equal_time_intervals_impossible
+
 [6] https://www.ynet.co.il/news/article/SkJ4tTdaw
+
 [7] https://developer.android.com/reference/android/location/Location#getAccuracy()
+
 [8] https://web.stanford.edu/group/scpnt/pnt/PNT15/2015_Presentation_Files/I15-vanDiggelen-GPS_MOOC-Smartphones.pdf
+
 [9] https://www.ardusimple.com/how-gps-can-help-you-measure-the-real-heading-of-your-vehicle/
+
 [10] https://medium.com/anello-photonics/mastering-true-north-5-ways-to-determine-your-absolute-heading-d63fc3543c0
 
 

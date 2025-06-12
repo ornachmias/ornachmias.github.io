@@ -72,6 +72,8 @@ edge['maxspeed'] = float(edge['maxspeed'])
 ```
 By adding bearing and cleaning up maxspeed, we're essentially enriching our graph. It's not just a bunch of connected lines anymore; it's a smart representation of the road network that understands directionality and speed limits. This robust graph is then ready for all sorts of advanced uses, especially when we get to the tricky business of map matching.
 
+![]({{ site.baseurl }}/assets/map-matching-1/graph_speed.png)
+
 # Resources
 ## Code
 https://github.com/ornachmias/map_matching

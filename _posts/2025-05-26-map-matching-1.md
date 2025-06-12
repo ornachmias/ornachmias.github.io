@@ -1,123 +1,83 @@
 ---
 layout: post
-title:  "Map Matching - Part 1: Generating an Synthetic Dataset"
+title:  "Map Matching Part 1 - GPS, Maps and Graphs"
 ---
-
-# Introduction
-This article is the first of a two-part series addressing the subject of map matching. The objective of the first part is to provide the  foundational knowledge. This includes an examination of the core concepts and challenges within the map matching domain, followed by a detailed process for generating a synthetic dataset. The second part of this series will then be dedicated to the exploration of various map matching algorithms and a comparative evaluation of their performance, utilizing the dataset constructed.
-
-# What is Map Matching
-Map matching is a crucial process in location-based services, addressing the inherent inaccuracies present in raw GPS data by aligning recorded coordinates with a road network. At its core lies the concept of "snapping," where individual GPS points are associated with the most probable road segment. This association is not solely based on proximity; different algorithms consider a multitude of factors, including the spatial closeness of the point to potential road segments, the direction and speed of travel inferred from the sequence of points, and the topological connectivity of the road network. By intelligently "snapping" these noisy measurements to the underlying infrastructure, map matching algorithms generate a more accurate and coherent representation of the traveled path, enabling reliable navigation, traffic analysis, and various other applications.
-
-![]({{ site.baseurl }}/assets/map-matching-1/example.png)
-https://upload.wikimedia.org/wikipedia/commons/8/8c/Map_Matching_Example_with_GraphHopper.png [4]
+This series of articles will look into the subject of map matching, providing foundational knowledge. It examines the core concepts and inherent challenges within this domain, and details a comprehensive process for generating a synthetic dataset. I'll then extends to exploring various map matching algorithms and a comparative evaluation of their performance, utilizing the dataset constructed.
 
 # GPS Data
-Satellites orbiting Earth transmit signals. A GPS receiver on the ground measures the time it takes for signals from at least four satellites to arrive. Using these time measurements, the receiver calculates its distance from each satellite. Knowing the satellite positions and these distances, the receiver triangulates its location on Earth. [1]  Our phones, or any other device with GPS support, contains a GPS receiver chip that performs these calculations. It receives the signals broadcast by the GPS satellites and uses them to determine its position, speed, and direction [2]. The satellites themselves only transmit signals; they do not track individual devices or perform calculations for them.
+While we often take for granted the availability of GPS on most of our mobile devices, in the background, this is actually quite a complex feat that is somehow available to us, essentially for free.
+Originating from U.S. military research in 1973 and made open to civilians in 1980 [1], GPS, short for Global Positioning System, accurately describes itself: "Global" means it's available worldwide, "Positioning" means it's designed to determine locations, and "System" signifies that it requires multiple components.
+Let's explain it in a hand-wavy way: there are satellites in space whose locations are known, and some ground stations on Earth whose positions are also known. These two communicate to ensure both satellites and ground stations are precisely where we expect them to be. Now for the last part: the users' devices, which contain a GPS receiver chip. This receiver is able to obtain signals from the satellites and triangulate its location based on multiple parameters received from them.
 
-## Noisy Measurements
+![]({{ site.baseurl }}/assets/map-matching-1/gps_arch.png)
+https://spaceplace.nasa.gov/gps/en/ [2]
+
+GPS receivers can provide all kinds of useful information, but for our discussion, only five matter: longitude, latitude, bearing (or heading), accuracy, and timestamp. Longitude, latitude, and timestamp are pretty self-explanatory. Bearing, or heading, is the angle measured in degrees in a clockwise direction from true north [3]. Usually, bearing indicates an angle to a specific place, while heading is the angle of the device itself. Accuracy is more of a probability field - it's the radius (in meters) within which there is a 68% chance that the actual signal is located [4]. This means if we receive an accuracy value of 3 meters alongside latitude and longitude, there is a 68% chance that the actual location is within 3 meters of the received coordinates.
+
+# Noisy Measurements
 GPS measurements contain noise due to multiple factors. Atmospheric interference, signals that can bounce off objects, geometric arrangement of visible satellites, satellite clock inaccuracies and minor errors in orbital data also contribute to measurement noise. Receiver quality and internal processing algorithms further influence the level of noise in the final output. Meaning, even if we stand still, our GPS measurement may think we continue moving all the time.
+Latitude and longitude typically have errors in the range of 5–10 meters for standard receivers under open sky conditions; high-accuracy receivers can achieve around 1 meter. Altitude measurements are generally less precise, with errors potentially reaching 10–20 meters or more. Heading accuracy can vary significantly, ranging from a few degrees to tens of degrees, especially at low speeds. Bearing accuracy depends on the accuracy of the start and end points and the distance between them. Speed accuracy is generally better than positional accuracy, potentially within a few tenths of a meter per second. [3]
 
-Latitude and longitude typically have errors in the range of 5-10 meters for standard receivers under open sky conditions; high-accuracy receivers can achieve around 1 meter. Altitude measurements are generally less precise, with errors potentially reaching 10-20 meters or more. Heading accuracy can vary significantly, ranging from a few degrees to tens of degrees, especially at low speeds. Bearing accuracy depends on the accuracy of the start and end points and the distance between them. Speed accuracy is generally better than positional accuracy, potentially within a few tenths of a meter per second. [3]
+![]({{ site.baseurl }}/assets/map-matching-1/noise_example.png)
 
 # Maps and Graphs
-Geographic maps represent spatial data with features like points, lines, and polygons, each associated with coordinates and attributes. Graphs, on the other hand, model relationships between these geographic entities as nodes connected by edges. A road network can be represented as a graph where intersections are nodes and roads are edges, overlaid on a map. This allows for the application of graph algorithms to spatial problems such as routing, network analysis, and connectivity studies on geographic data.
+Geographic maps visually represent spatial data, displaying features like points, lines, and polygons with associated coordinates and attributes. Think of a map showing buildings (polygons), rivers (lines), and landmarks (points). Graphs, however, model the relationships between these geographic entities. In a graph, nodes represent discrete locations or points of interest, while edges represent the connections or relationships between them. For instance, a road network is perfectly suited for graph representation: intersections become nodes, and the roads connecting them become edges. This graph structure is then overlaid on a geographic map. This powerful combination allows us to apply advanced graph algorithms to solve spatial problems directly on geographic data, enabling applications like efficient routing or complex network analysis.
+Now, while maps provide the visual context and graphs offer the relational structure, there's a crucial step to bridge the gap between noisy, real-world GPS measurements and the clean, structured digital road network. This is where map matching becomes handy.
 
-![]({{ site.baseurl }}/assets/map-matching-1/graph_edges_vertices.png)
+![]({{ site.baseurl }}/assets/map-matching-1/map_to_graph.png)
 
-To connect between those two representations, map matching is often necessary. Map matching is the process of aligning observed sequences of user locations with the underlying road network or other spatial graph.
-
+# What is Map Matching
+Map matching is a crucial process in location-based services, addressing the inherent inaccuracies present in raw GPS data by aligning recorded coordinates with a road network. At its core lies the concept of "snapping," where individual GPS points are associated with the most probable road segment. This association is not solely based on proximity, different algorithms consider a multitude of factors, including the spatial closeness of the point to potential road segments, the direction and speed of travel inferred from the sequence of points, and the topological connectivity of the road network. By intelligently "snapping" these noisy measurements to the underlying infrastructure, map matching algorithms generate a more accurate and coherent representation of the traveled path, enabling reliable navigation, traffic analysis, and various other applications.
 A simple example of the importance of such a thing is your everyday scenario - you're driving and your navigation app loses GPS signal in a short tunnel. Without map matching, the software would struggle, likely misplacing your vehicle by hundreds of meters. However, map matching would have already aligned your position to a specific road. Assuming the tunnel has no intersections, the system predicts your continued movement along that same road, using your car's speed and calculations (like linear algebra) to maintain an accurate location estimate.
 
-# Generating a Dataset
-Having established what map matching is and why it's necessary, our next step is to explore the algorithms that perform this task. However, before evaluating these algorithms, we first require a suitable dataset. The following section details the code used to generate both augmented noisy GPS data and its corresponding 'actual' non-noisy counterpart.
+# Implementation First Step - Map to Graph
+In order to properly implement and learn map matching algorithms, we first need to have a map and a matching graph. Lets have a quick look on how we can accomplish that.
+We kick things off using the `pyrosm` library, which is handy for working with OpenStreetMap (OSM) data (basically a massive, free map of the world).
 
-## Map to Graph
-To obtain graph-formatted map data, we leverage publicly available OpenStreetMap (OSM) information. This data is processed using `pyrosm`, which handles the conversion of OSM data into a graph structure, which is then represented using `igraph`. All this functionality is encapsulated within a `GraphProvider` class. This class automates the downloading of `.pbf` map files, their conversion into a graph, the calculation of edge bearings, and the assignment of a default 35 km/h maximum speed to edges lacking explicit speed limits—a reasonable assumption for what we presume are minor urban roads. Finally, to optimize loading times, the processed graph is saved as a pickle file to save all this processing next time (which next time? Well, in my case it's whenever I make any small change that breaks the code somehow, and then I have to re-run it 3 times to realize I forgot a method call. So, you know, the usual).
+Here's how we pull out the raw network parts:
+```python
+import os
+from pyrosm import OSM
+import igraph as ig
+import numpy as np
 
-![]({{ site.baseurl }}/assets/map-matching-1/max_speed.png)
+# Assuming map_path and crop_bounding_box are set up earlier
+# map_path points to our downloaded OSM file
+# crop_bounding_box lets us focus on a specific area if needed
 
-## Creating Augmented Data
-Following the initial graph construction, the next phase focuses on generating synthetic data based on this graph. The `Dataset` class encapsulates all logic for this data generation process. While it might be more efficient to work in a vectorized form on the data, I've decided to work iteratively for numerous reasons:
-1. The code is more readable, which is important since I assume no previous knowledge is needed to read this article.
-2. Intuitively, it simulates the way we expect the GPS to work.
-3. Performance is not much of a concern at this point.
-If you decide to take it to production and generate points over an entire country, I recommend that you take the time to re-write it in vectorized form to improve performance.
+osm = OSM(map_path, bounding_box=Config.crop_bounding_box)
+# Get all the road segments and their intersections
+nodes, edges = osm.get_network(nodes=True, network_type='driving')
+```
 
-### Select a Route
-The first step is to generate a realistic route from the graph. This route serves as the ground truth that our algorithms will try to reconstruct.
-The process begins with the selection of source and target vertices. These are chosen randomly from the graph, with the limitation that they should be separated by a minimum distance of 100 meters. This constraint is implemented to prevent trivial routes, such as those where the origin and destination are on the same edge. For this distance calculation here and in the next steps, the coordinates are projected to an appropriate local CRS to ensure geographic accuracy, a methodology detailed in my previous post .
-Once suitable source and target vertices are identified, the `get_shortest_path` method, provided by the `igraph` package, is employed to determine the sequence of edges forming the optimal path between them.
-Some of you might notice a problem with those sources and targets - they will never be at the middle point of an edge. While data points for data generation are generated across all of the route's edges, this characteristic of start and end points being on nodes is considered acceptable for our purposes. The rationale is that the point-matching process applies to all generated data points along the route, and the specific location of the route's two endpoints has a limited impact on the overall augmented dataset.
-![]({{ site.baseurl }}/assets/map-matching-1/routes.png)
+What's happening above is `OSM` loads our map file, and then `get_network` sifts through  it to find all the bits that make up the "driving" network - that's our roads and where they meet. The nodes are essentially the intersections or endpoints, and edges are the actual road segments connecting them. (Also, don't worry, the code in the repo also includes downloading the map and setting the configuration value for the bounding box. Just a bit boring to add that in here as well).
 
-### Selecting Sampling Points Timestamps
-With the route itself established, the arguably more tricky task is to determine the timestamps for our simulated GPS sampling points along this path. While many applications are configured to send location data at fixed intervals (say, every X seconds), the reality of server-side data is often less predictable. To create a dataset that reflects it, we need to simulate how far a user would travel in variable timeframes, rather than strictly uniform ones.
+Once we have these nodes and edges from the raw map data, we hand them over to igraph chosen mostly because of performance. This step builds the actual graph structure we need:
+```python
+# Convert the extracted nodes and edges into an igraph object
+graph = osm.to_graph(nodes, edges, graph_type='igraph')
+```
 
-The challenge is that real-world data isn't always clockwork. An app might be set to send GPS updates every few seconds, but several factors can lead to data being missing, delayed, or ill-synchronized. For example, driving through an area with no cellular reception, like a tunnel, can interrupt transmission. In other instances, a user might switch to another app (perhaps Spotify to curate the perfect driving playlist) when background data collection isn't permitted, temporarily halting updates. On a more technical note, slight drifts between satellite and receiver clocks can also cause minor deviations in the actual sampling intervals [5]. Our dataset needs to reflect these common scenarios.
-
-To model these variations, I've chosen to generate the time intervals between samples using a randomized approach based on a normal distribution. We're using a mean interval of 4 seconds with a standard deviation (sigma) of 3 seconds. This setup means most time gaps between samples will naturally fall between 1 and 7 seconds. I've also implemented a minimum interval of 1 second to prevent multiple samples from effectively occurring at the same instant.
-
-### Driving Speed
-Beyond just the route, another key variable influencing both a driver's location over time and the perceived accuracy of GPS bearing measurements is, naturally, the driving speed. Since we're not working with live measurements, we need to simulate these speeds. The most sensible starting point for this is the posted speed limit for each road segment.
-We take this information from OpenStreetMap's `maxspeed` attribute. (For segments where this data is missing, we already had a fallback strategy discussed earlier). This `maxspeed` then becomes our base for our speed simulation. For each edge in our graph, we model the driving speed by drawing a random value from a normal distribution. The mean of this distribution is set to the edge's `maxspeed` value, and I've chosen a standard deviation equal to half of that mean. This touch of randomization is our way of mimicking real-world driving: the flow of traffic, individual driving styles, and other on-the-road variables.
-As an example, consider a road segment with a `maxspeed` of 90 km/h. Our model uses a mean of 90 km/h and sigma of 45 km/h, which can generate realistic speeds. This includes everything from very slow travel (e.g. traffic jam) up to speeds around the 90 km/h limit. It also allows for drivers reasonably exceeding this limit – for instance, speeds up to around 135 km/h are within one standard deviation. While the model will mostly generate speeds closer to the mean, it doesn't entirely rule out those more... enthusiastic speeds (like the 232 km/h scenarios that occasionally make headlines [6]), as these would represent rarer values further out in the distribution's tail.
-
-### Coordinates
-Alright, with our route charted and speeds for each segment determined, we're ready to generate the actual sequence of GPS points along this path. We begin our journey with a relative timestamp of zero. This means we're not tied to a specific real-world start time, instead, the absolute "when" of the route can be decided by whatever application eventually uses this data. It keeps things nice and flexible.
-To place each data point, we effectively "drive" along our route, edge by edge. For each segment, we interpolate points based on two main ingredients: the simulated speed for that particular edge and our series of (deliberately varied) sampling timestamps. The geometric magic for this is handled by the `line_interpolate_point` function from the trusty `shapely` package. Essentially, you provide this function with the start and end coordinates of an edge, the speed assigned to it, and a specific time offset (from our sampling timestamps, representing time elapsed along that edge), and it calculates the precise coordinates where that sample point would fall.
-
-### Accuracy
-Now, let's talk about GPS accuracy. For each simulated location point, I also need an associated accuracy value. This figure usually indicates a radius in meters around the reported coordinates, representing a 68th percentile confidence level [7] – essentially, how much wiggle room there is in that fix.
-As you might guess, a whole host of factors play into how good (or bad) this accuracy figure can be. We're talking satellite positions, how tall the buildings are around the device (hello, urban canyons!), signal strength, atmospheric conditions, and more [8]. While diving deep into all those variables is a fascinating journey (though perhaps a longer one than you'd initially sign up for), our aim here is to generate values that feel realistic for our dataset.
-To achieve this, I've set up a system based on four predefined accuracy ranges, reflecting different real-world conditions:
-- 3 - 15 meters: Pretty good signal, representing optimal or near-optimal conditions.
-- 15 - 30 meters: Decent, but perhaps some minor interference – let's call these sub-optimal conditions.
-- 30 - 60 meters: Now we're getting into noticeably noisy values.
-- 60 - 90 meters: This represents more significant signal degradation, the kind of interference I've occasionally spotted in production databases.
-  To decide which of these ranges a particular sample's accuracy will come from, I use a weighted selection approach with the following probabilities: `[0.7, 0.25, 0.04, 0.01]`. So, most of the time (70%) we'll be in optimal conditions, but we'll still get a sprinkle of the less ideal scenarios. Once a range is selected based on these weights, an actual accuracy value is then picked uniformly at random from within that specific range.
-
-![]({{ site.baseurl }}/assets/map-matching-1/accuracy_dist.png)
-
-### Coordinates Noise
-So now that we've got the samples and an accuracy for each one, we can start introducing noise to each set of coordinates. This noise depends upon the accuracy we've set to the point, since the samples can be in any place inside this horizontal measurement, based on normal distribution. So we set our noise with mean 0 and std of the accuracy, and we generate the noise. The overall distribution of noise will seem like one single normal distribution, but when we separate it by the accuracy, we'll see its multiple normal distributions behaving differently from one another, due to our parameters and number of samples in each group.
-With our sample points and their GPS accuracies established, it's time to introduce some realistic positional noise. The amount of noise added to each coordinate is directly tied to its pre-assigned accuracy value. We model this uncertainty by assuming the error around the initially calculated location follows a normal distribution. Specifically, for each coordinate, we generate noise from a normal distribution with a mean of zero and a standard deviation that matches the point's specific accuracy value (in meters). Interestingly, if you looked at all the applied noise collectively, it might resemble a single normal distribution. However, it's more nuanced than that. When you consider the noise based on our defined accuracy tiers (optimal, sub-optimal, etc.), it becomes clear that the overall effect is a composite of multiple distinct normal distributions. Each tier contributes a distribution with a different spread (its standard deviation), shaping a more varied and ultimately more realistic scatter of GPS points.
-
-![]({{ site.baseurl }}/assets/map-matching-1/noise_dist.png)
-![]({{ site.baseurl }}/assets/map-matching-1/noise_by_acc_dist.png)
-
-### Bearing Noise
-Now for the final step - the bearing. The bearing is calculated from successive position fixes, so if the device is moving slowly, the distance between these fixes is tiny, making the direction calculation quite sensitive to small GPS position errors [9]. Reflecting this, our model applies a more substantial random noise when the simulated speed drops below 1.5 m/s, drawing from a normal distribution with a mean of 0 and a hefty standard deviation of 45 degrees.
-Once the speed picks up beyond that 1.5 m/s threshold, GPS bearing typically becomes more stable. The accuracy generally improves as the vehicle moves faster because the distance between position fixes increases, making the direction calculation less susceptible to minor positional noise [10]. Our simulation mirrors this by calculating the noise's standard deviation as inversely proportional to the speed (using a scaling factor of `30.0 degrees*m/s`). However, since no GPS is perfect, even at higher speeds, we ensure there's always a touch of uncertainty by setting a minimum noise standard deviation of 2.0 degrees. This generated noise is then added to the true bearing, and the result is neatly wrapped to stay within the 0-360 degree range, giving us our final, realistically noisy, bearing.
-![]({{ site.baseurl }}/assets/map-matching-1/bearing_noise_dist.png)
-
-# Summary
-In this initial part of our series on map matching, we've focused on discussing the essential concepts. This foundational understanding, coupled with the carefully prepared dataset, paves the way for the second part of our series, where we will delve into various map matching algorithms and assess their performance.
-
-![]({{ site.baseurl }}/assets/map-matching-1/final_example.png)
+This line is the core of the transformation. It takes those raw map elements and creates a proper graph where our intersections are vertices and the road segments are edges. The cool part is that `pyrosm` automatically carries over useful information from the OSM data, like the road's name or its geometry (the actual shape of the road segment). We then take that geometry and use it to calculate things like the road's bearing, and we also clean up other attributes like `maxspeed`, ensuring every edge has the data we need for later calculations.
+```python
+# Loop through every edge (road segment) in our new graph
+for edge in graph.es:
+# Calculate the bearing (direction) of the road segment
+edge['bearing'] = self.calculate_bearing(edge)
+# Set a default maxspeed if it's missing, otherwise convert to float
+if edge['maxspeed'] is None:
+edge['maxspeed'] = 35.
+else:
+edge['maxspeed'] = float(edge['maxspeed'])
+```
+By adding bearing and cleaning up maxspeed, we're essentially enriching our graph. It's not just a bunch of connected lines anymore; it's a smart representation of the road network that understands directionality and speed limits. This robust graph is then ready for all sorts of advanced uses, especially when we get to the tricky business of map matching.
 
 # Resources
+## Code
 https://github.com/ornachmias/map_matching
 
 ## References
 [1] https://en.wikipedia.org/wiki/Global_Positioning_System
-
 [2] https://spaceplace.nasa.gov/gps/en/
-
-[3] https://www.gps.gov/systems/gps/performance/accuracy/
-
-[4] https://en.wikipedia.org/wiki/Map_matching
-
-[5] https://www.researchgate.net/post/GPS_data_recording_at_equal_time_intervals_impossible
-
-[6] https://www.ynet.co.il/news/article/SkJ4tTdaw
-
-[7] https://developer.android.com/reference/android/location/Location#getAccuracy()
-
-[8] https://web.stanford.edu/group/scpnt/pnt/PNT15/2015_Presentation_Files/I15-vanDiggelen-GPS_MOOC-Smartphones.pdf
-
-[9] https://www.ardusimple.com/how-gps-can-help-you-measure-the-real-heading-of-your-vehicle/
-
-[10] https://medium.com/anello-photonics/mastering-true-north-5-ways-to-determine-your-absolute-heading-d63fc3543c0
-
-
+[3] https://www.lifewire.com/what-is-bearing-in-gps-1683320
+[4] https://developer.android.com/reference/android/location/Location#getAccuracy()

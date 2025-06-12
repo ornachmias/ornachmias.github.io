@@ -52,7 +52,7 @@ nodes, edges = osm.get_network(nodes=True, network_type='driving')
 
 What's happening above is `OSM` loads our map file, and then `get_network` sifts through  it to find all the bits that make up the "driving" network - that's our roads and where they meet. The nodes are essentially the intersections or endpoints, and edges are the actual road segments connecting them. (Also, don't worry, the code in the repo also includes downloading the map and setting the configuration value for the bounding box. Just a bit boring to add that in here as well).
 
-Once we have these nodes and edges from the raw map data, we hand them over to igraph chosen mostly because of performance. This step builds the actual graph structure we need:
+Once we have these nodes and edges from the raw map data, we hand them over to `igraph` chosen mostly because of performance. This step builds the actual graph structure we need:
 ```python
 # Convert the extracted nodes and edges into an igraph object
 graph = osm.to_graph(nodes, edges, graph_type='igraph')
@@ -78,6 +78,9 @@ https://github.com/ornachmias/map_matching
 
 ## References
 [1] https://en.wikipedia.org/wiki/Global_Positioning_System
+
 [2] https://spaceplace.nasa.gov/gps/en/
+
 [3] https://www.lifewire.com/what-is-bearing-in-gps-1683320
+
 [4] https://developer.android.com/reference/android/location/Location#getAccuracy()

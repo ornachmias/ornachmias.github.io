@@ -19,13 +19,14 @@ With our dataset generated, we can now implement and evaluate several map-matchi
 This sequence was chosen because the algorithms are straightforward, grounded in solid theoretical principles, and build upon one another, creating a clear and logical progression. Importantly, these methods are known to produce strong results in practice \[1\].
 
 Before diving into the solutions, let's formally redefine the problem:
+
 Annotations:
-X - longitude
-Y - latitude
-B - bearing
-H - heading
-A - accuracy
-E - edge in the graph
+- X - longitude
+- Y - latitude
+- B - bearing
+- H - heading
+- A - accuracy
+- E - edge in the graph
 
 Given GPS samples that contains: X<sub>noisy</sub>, Y<sub>noisy</sub>, B<sub>noisy</sub>, H<sub>noisy</sub>, A<sub>accuracy</sub>
 Our objective is to find the corrected coordinates: X<sub>pred</sub>, Y<sub>pred</sub>, and the most likely road segment: E<sub>pred</sub>
@@ -110,9 +111,9 @@ D<sub>candidates</sub> = A<sub>noisy</sub> * 3
 
 Next, each candidate in this pool is scored using a formula that combines two key factors: a Distance Score and a Bearing Score.
 
-D<sub>diff</sub> = |(Y<sub>2</sub> - Y<sub>1</sub>)X<sub>noisy</sub> - (X<sub>2</sub> - X<sub>1</sub>)Y<sub>noisy</sub> + X<sub>2</sub>Y<sub>1</sub> - Y<sub>2</sub>X<sub>1</sub>| / ((Y<sub>2</sub> - Y<sub>1</sub>) ** 2 + (X<sub>2</sub> - X<sub>1</sub>) ** 2 ) ** 0.5
+D<sub>diff</sub> = \|(Y<sub>2</sub> - Y<sub>1</sub>)X<sub>noisy</sub> - (X<sub>2</sub> - X<sub>1</sub>)Y<sub>noisy</sub> + X<sub>2</sub>Y<sub>1</sub> - Y<sub>2</sub>X<sub>1</sub>\| / ((Y<sub>2</sub> - Y<sub>1</sub>) ** 2 + (X<sub>2</sub> - X<sub>1</sub>) ** 2 ) ** 0.5
 
-B<sub>diff</sub> = Min(|B<sub>noisy</sub> - B<sub>edge</sub>|, 2pi - |B<sub>noisy</sub> - B<sub>edge</sub>|)
+B<sub>diff</sub> = Min(\|B<sub>noisy</sub> - B<sub>edge</sub>\|, 2pi - \|B<sub>noisy</sub> - B<sub>edge</sub>\|)
 
 Score<sub>pred</sub> = 0.5 * (1 / D<sub>diff</sub> + 1) + 0.5 * ((cos(B<sub>diff</sub>) + 1) / 2)
 

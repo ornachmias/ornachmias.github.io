@@ -5,6 +5,8 @@ title:  "Map Matching Part 2 - Creating Synthetic Dataset"
 
 This series of articles will look into the subject of map matching, providing foundational knowledge. It examines the core concepts and inherent challenges within this domain, and details a comprehensive process for generating a synthetic dataset. The discussion then extends to exploring various map matching algorithms and a comparative evaluation of their performance, utilizing the dataset constructed.
 
+- [Part 1](https://ornachmias.github.io/2025/05/26/map-matching-1.html)
+
 # Generating a Dataset
 Having established what map matching is and why it's necessary, our next step is to explore the algorithms that perform this task. However, before evaluating these algorithms, we first require a suitable dataset. The following section details the code used to generate both augmented noisy GPS data and its corresponding 'actual' non-noisy counterpart.
 

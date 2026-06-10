@@ -25,8 +25,8 @@ Formally, an HMM consists of:
 - A set of **hidden states** S = {s₁, s₂, ..., sₙ}
 - A set of **observations** O = {o₁, o₂, ..., oₘ}
 - An **initial state distribution** π, where π(i) = P(state at t=0 is sᵢ)
-- A **transition matrix** A, where A[i][j] = P(state at t is sⱼ | state at t-1 is sᵢ)
-- An **emission function** B, where B(i, oₜ) = P(observing oₜ | current state is sᵢ)
+- A **transition matrix** A, where A[i][j] = P(state at t is sⱼ \| state at t-1 is sᵢ)
+- An **emission function** B, where B(i, oₜ) = P(observing oₜ \| current state is sᵢ)
 
 Given a sequence of observations, the central question is: what sequence of hidden states most likely produced them? The **Viterbi algorithm** answers this exactly.
 
@@ -43,7 +43,7 @@ In the map matching context:
 
 Given a GPS trace of N points, we want to find the sequence of edges E₁, E₂, ..., Eₙ that maximizes:
 
-P(E₁, ..., Eₙ | GPS₁, ..., GPSₙ) ∝ P(GPS₁ | E₁) × ∏ P(GPSₜ | Eₜ) × P(Eₜ | Eₜ₋₁)
+P(E₁, ..., Eₙ \| GPS₁, ..., GPSₙ) ∝ P(GPS₁ \| E₁) × ∏ P(GPSₜ \| Eₜ) × P(Eₜ \| Eₜ₋₁)
 
 This joint probability is what the Viterbi algorithm maximizes efficiently using dynamic programming.
 
